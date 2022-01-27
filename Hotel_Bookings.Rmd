@@ -1,0 +1,41 @@
+---
+title: "Hotel_Bookings"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+```
+
+## Load dataset:
+
+```{r}
+hotels_df = read.csv('hotel_bookings.csv')
+```
+
+```{r}
+hotels_df
+```
+
+```{r}
+summary(hotels_df)
+```
+
+```{r}
+str(hotels_df)
+```
+
+
+## 
+
+:
+
+```{r}
+
+```
+
+
