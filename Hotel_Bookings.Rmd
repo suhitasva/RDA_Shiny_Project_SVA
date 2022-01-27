@@ -9,6 +9,11 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r}
 library(tidyverse)
+library(dplyr)
+library(ggplot2)
+library(datasets)
+library(funModeling) 
+library(Hmisc)
 ```
 
 ## Load dataset:
@@ -18,15 +23,24 @@ hotels_df = read.csv('hotel_bookings.csv')
 ```
 
 ```{r}
+hotels_df$reservation_status_date = as.Date(hotels_df$reservation_status_date, format="%Y-%m-%d")
+```
+
+```{r}
+hotels_df = hotels_df %>% mutate_if(is.character, as.factor) %>%
+                          glimpse()
+```
+
+```{r}
 hotels_df
 ```
 
 ```{r}
-summary(hotels_df)
+str(hotels_df)
 ```
 
 ```{r}
-str(hotels_df)
+describe(hotels_df)
 ```
 
 
