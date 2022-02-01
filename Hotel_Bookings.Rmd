@@ -7,6 +7,8 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+## Loading libraries needed:
+
 ```{r}
 library(tidyverse)
 library(dplyr)
@@ -16,15 +18,21 @@ library(funModeling)
 library(Hmisc)
 ```
 
-## Load dataset:
+## Loading Hotel Bookings dataset:
 
 ```{r}
 hotels_df = read.csv('hotel_bookings.csv')
 ```
 
+## Initial data cleanup:
+
+* Changing the reservation status date column to date type:
+
 ```{r}
 hotels_df$reservation_status_date = as.Date(hotels_df$reservation_status_date, format="%Y-%m-%d")
 ```
+
+* Changing all character type data columns to factor types:
 
 ```{r}
 hotels_df = hotels_df %>% mutate_if(is.character, as.factor) %>%
@@ -32,8 +40,14 @@ hotels_df = hotels_df %>% mutate_if(is.character, as.factor) %>%
 ```
 
 ```{r}
-hotels_df
+dim(hotels_df)
 ```
+
+```{r}
+head(hotels_df, 6)
+```
+
+## Dataset makeup:
 
 ```{r}
 str(hotels_df)
@@ -43,13 +57,58 @@ str(hotels_df)
 describe(hotels_df)
 ```
 
-
-## 
-
-:
+## Checking null values:
 
 ```{r}
-
+sum(is.na(hotels_df))
 ```
 
+```{r}
+df <- as.data.frame(
+  cbind(
+    lapply(
+      lapply(hotels_df, is.na), sum)
+    )
+  )
+
+rownames(subset(df, df$V1 != 0))
+```
+
+```{r}
+hotels_df = hotels_df %>% drop_na(children)
+```
+
+```{r}
+dim(hotels_df)
+```
+
+```{r}
+hotels_df
+```
+
+## Looking at cancellations for each hotel type:
+
+```{r}
+freq(hotels_df['hotel'])
+```
+
+```{r}
+hotels_df %>% select(hotel, is_canceled) %>%
+              group_by(hotel, is_canceled) %>%
+              summarise(cancellation_type_count = n()) %>%
+              mutate(total_bookings = nrow(hotels_df)) %>%
+              mutate(percent_of_total_bookings
+                     = (cancellation_type_count/total_bookings)*100) %>%
+              ggplot(., aes(x = hotel, y = percent_of_total_bookings)) +
+              geom_col(aes(fill = is_canceled), stat='identity', position='dodge2')
+```
+
+
+
+
+
+```{r}
+hotels_df %>% select(hotel, is_canceled) %>%
+              ggplot(. , aes(x = hotel)) + geom_bar(aes(fill = hotel))
+```
 
