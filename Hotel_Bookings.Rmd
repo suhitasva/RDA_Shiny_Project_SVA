@@ -88,27 +88,47 @@ hotels_df
 
 ## Looking at cancellations for each hotel type:
 
+* Looking at number of booking in the dataset for each hotel type:
+
 ```{r}
-freq(hotels_df['hotel'])
+freq(hotels_df['hotel'], plot = FALSE)
+```
+```{r}
+cancel_df = hotels_df %>% select(hotel, is_canceled) %>%
+                group_by(hotel, is_canceled) %>%
+                summarise(cancellation_type_count = n()) %>%
+                mutate(total_bookings = sum(cancellation_type_count)) %>%
+                mutate(percent_cancellation
+                     = round((cancellation_type_count/total_bookings)*100, 2)) 
 ```
 
 ```{r}
-hotels_df %>% select(hotel, is_canceled) %>%
-              group_by(hotel, is_canceled) %>%
-              summarise(cancellation_type_count = n()) %>%
-              mutate(total_bookings = nrow(hotels_df)) %>%
-              mutate(percent_of_total_bookings
-                     = (cancellation_type_count/total_bookings)*100) %>%
-              ggplot(., aes(x = hotel, y = percent_of_total_bookings)) +
-              geom_col(aes(fill = is_canceled), stat='identity', position='dodge2')
+cancel_df$is_canceled = ifelse(cancel_df$is_canceled == 0,'Not Cancelled','Cancelled')
 ```
-
-
-
-
 
 ```{r}
-hotels_df %>% select(hotel, is_canceled) %>%
-              ggplot(. , aes(x = hotel)) + geom_bar(aes(fill = hotel))
+cancel_df = cancel_df %>% mutate_if(is.character, as.factor)
 ```
+
+```{r}
+cancel_df
+```
+
+```{r}
+cancel_df %>% select(hotel, is_canceled, percent_cancellation) %>%
+              ggplot(. ,aes(x = hotel, 
+                            y = percent_cancellation, 
+                            label = percent_cancellation,
+                            fill = is_canceled)) + 
+              geom_col(stat = "identity", width = 0.7) + 
+              geom_text(size = 3.5, position = position_stack(vjust = 0.5), 
+                        colour = "white", fontface = "bold") +
+              labs(title ="Cancellations per Hotel Type", x = "Type of Hotel",
+                       y = "Percentage of total bookings (%)") +
+              theme(plot.title = element_text(hjust = 0.5), legend.title = element_blank())
+```
+
+
+
+
 
