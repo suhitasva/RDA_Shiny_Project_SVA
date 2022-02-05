@@ -1,6 +1,11 @@
 
-
+library(shinydashboard)
 library(shiny)
 
-fluidPage(
+dashboardPage(
+  skin = "purple",
+  dashboardHeader(title='Hotel Booking Analysis',
+                  titleWidth = 300),
+  dashboardSidebar(width = 300),
+  dashboardBody()
 )
