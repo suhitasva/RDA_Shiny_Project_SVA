@@ -10,12 +10,18 @@ knitr::opts_chunk$set(echo = TRUE)
 ## Loading libraries needed:
 
 ```{r}
+# install.packages("treemap", repos="http://cran.rstudio.com/", dependencies=TRUE)
+```
+
+```{r}
 library(tidyverse)
 library(dplyr)
 library(ggplot2)
-library(datasets)
 library(funModeling) 
-library(Hmisc)
+library(treemap)
+```
+```{r}
+library(RColorBrewer)
 ```
 
 ## Loading Hotel Bookings dataset:
@@ -86,7 +92,22 @@ dim(hotels_df)
 hotels_df
 ```
 
+```{r}
+
+```
+
+
 ## Looking at cancellations for each hotel type:
+
+### Overall correlation and cancellation correlation:
+
+```{r}
+correlation_table(hotels_df, 'is_canceled')
+```
+
+```{r}
+# cor(hotels_df %>% filter(is_canceled == 0) %>% select(is_canceled, lead_time, arrival_date_year, arrival_date_week_number, arrival_date_day_of_month, stays_in_weekend_nights, stays_in_week_nights, adults, children, babies, is_repeated_guest, previous_cancellations, previous_bookings_not_canceled, booking_changes, booking_changes, days_in_waiting_list, required_car_parking_spaces, required_car_parking_spaces, total_of_special_requests))
+```
 
 * Looking at number of bookings in the dataset for each hotel type:
 
@@ -221,7 +242,7 @@ hotels_df %>% select(hotel, is_canceled, deposit_type) %>%
 ```{r}
 
 hotels_df %>% select(hotel, is_canceled, deposit_type) %>%
-           filter(is_canceled == 0) %>% 
+           filter(is_canceled == 1) %>% 
            group_by(hotel, is_canceled, deposit_type) %>%
            summarise(bookings_by_deposit_type = n()) %>%
            ggplot(. ,aes(x = deposit_type, y = log(bookings_by_deposit_type), label = bookings_by_deposit_type)) +
@@ -231,8 +252,7 @@ hotels_df %>% select(hotel, is_canceled, deposit_type) %>%
            labs(title = "Number of bookings for each deposit type",
                 x = "Type of Deposit",
                 y = "Number of bookings - log scale") +
-           geom_text(size = 3.5, position = position_dodge2(0.9), vjust = 1.8, 
-                        colour = "white", fontface = "bold") +
+            +
            theme(plot.title = element_text(hjust = 0.5), legend.title = element_blank()) 
 
 ```
@@ -297,14 +317,14 @@ hotels_df %>% select(hotel, is_canceled, distribution_channel) %>%
 
 ```{r}
 hotels_df %>% select(hotel, is_canceled, distribution_channel, adr) %>%
-              filter(is_canceled == 1) %>%
+              filter(is_canceled == 1 & adr<400) %>%
               group_by(hotel, is_canceled, distribution_channel) %>%
               summarise(avg_adr = mean(adr))
 ```
 
 ```{text}
 
-In cancelled bookings, TA/TO bookings formed the majority over other types - the reason probably is easy of cancellation and low rates that customer sees in this case while cancelling. For the City hotel, the direct booking rate is slightly higher than the TA/TO rate, not the same again for Resort hotel.  
+In cancelled bookings, TA/TO bookings formed the majority over other types - the reason probably is easy of cancellation and low rates that customer sees in this case while cancelling. For the City hotel, the direct booking rate is slightly higher than the TA/TO rate, not the same again for Resort hotel.  Lower Direct rate to match TA/TO rate + plus take deposit to possible reduce a bit of cancellations.
 
 ```
 
@@ -318,17 +338,25 @@ hotels_df %>% select(hotel, is_canceled, distribution_channel) %>%
               mutate(total_non_cancelled_bookings = sum(bookings_by_distribution))
 ```
 
-* Average ADR for non-cancelled bookings by distribution type for both hotel types:
+
+```{text}
+
+In non-cancelled bookings, show the same trend - TA/TO bookings formed the majority over other types - the reason probably is easy of booking. For the City hotels, the direct booking rate is slightly higher than the TA/TO rate, not the same for Resort hotel.
+```
+
+
+
+* Average ADR for cancelled bookings by distribution type for both hotel types:
 
 ```{r}
 hotels_df %>% select(hotel, is_canceled, distribution_channel, adr) %>%
-              filter(is_canceled == 0) %>%
+              filter(is_canceled == 1& adr<400) %>%
               group_by(hotel, is_canceled, distribution_channel) %>%
               summarise(avg_adr = mean(adr)) %>%
-              ggplot(., aes(x=distribution_channel, label = round(avg_adr, 1), y=avg_adr, fill=hotel)) +
+              ggplot(., aes(x=distribution_channel, label = round(avg_adr, 0), y=avg_adr, fill=hotel)) +
               geom_segment(aes(x=distribution_channel, xend=distribution_channel, y=0, yend=avg_adr)) +
               geom_point(size=4, alpha=1, shape=21, stroke=0.5) +
-              geom_text(size = 3, nudge_y = 3, vjust = 2, colour = "blue") +
+              geom_text(size = 3, nudge_y = 1.5, vjust = 2, colour = "blue") +
               theme_light() +
               coord_flip() +
               labs(title ="Average ADR per distribution type", x = "Average ADR",
@@ -336,9 +364,175 @@ hotels_df %>% select(hotel, is_canceled, distribution_channel, adr) %>%
               theme(plot.title = element_text(hjust = 0.5), legend.title = element_blank())
 ```
 
-```{text}
+* Distribution of ADR for cancelled vs not-cancelled:
 
-In non-cancelled bookings, show the same trend - TA/TO bookings formed the majority over other types - the reason probably is easy of booking. For the City hotels, the direct booking rate is slightly higher than the TA/TO rate, not the same for Resort hotel.
+  + Not-Cancelled
+
+```{r}
+library(forcats)
+```
+
+```{r}
+hotels_df %>% select(hotel, is_canceled, distribution_channel, adr) %>%
+              filter(hotel == "City Hotel" & is_canceled == 0 & adr<400) %>%
+              ggplot(aes(x=fct_reorder(distribution_channel, adr), y=adr, fill=distribution_channel)) +
+              geom_boxplot(alpha=0.7) +
+              stat_summary(fun=mean, geom="point", shape=20, size=3, color="red", fill="red") +
+              scale_fill_brewer(palette="Set2") +
+              labs(title ="Average ADR distribution (non-cancelled) per Hotel Distribution type",
+                   x = "Hotel Distribution chanel",
+                   y = "Average ADR - log scale") +
+              theme(plot.title = element_text(hjust = 0.5), legend.title = element_blank())
+```
+
+```{r}
+hotels_df %>% select(hotel, is_canceled, distribution_channel, adr) %>%
+              filter(hotel == "City Hotel" & is_canceled == 1& adr<400) %>%
+              ggplot(aes(x=fct_reorder(distribution_channel, adr), y=adr, fill=distribution_channel)) +
+              geom_boxplot(alpha=0.7) +
+              stat_summary(fun=mean, geom="point", shape=20, size=3, color="red", fill="red") +
+              scale_fill_brewer(palette="Set2") +
+              labs(title ="Average ADR distribution (cancelled) per Hotel Distribution type",
+                   x = "Hotel Distribution chanel",
+                   y = "Average ADR - log scale") +
+              theme(plot.title = element_text(hjust = 0.5), legend.title = element_blank())
 
 ```
+
+```{r}
+hotels_df %>% filter(adr > 2000)
+```
+
+```{text}
+What we can see here is there is a difference between which rate is higher vs lower (Direct-TA/TO) for both types of hotels. For City hotels among cancelled bookings direct booking rate is higher than the TA/TO rate (vice-versa for Resort hotels). If we, compare these findings with the percent cancelled vs not for bot type of hotels (out of total booking) it might be possible that this rate flip plus the deposit taken or not factor had something to do with city hotel's higher percentage of cancellations.
+
+The lollipop graph shows how the rates (high vs low) are flipped for Direct and TA/TO between the City Hotels and the Resort Hotels
+
+Average ADRs for cancelled City Hotels bookings are lower across the board than the non-cancelled bookings.
+```
+
+## Looking at who is cancelling more:
+
+* Repeat guest or not:
+
+    + 0 = Not a repeat guest
+    + 1 = Repeat guest
+
+* Number of bookings for each guest type:
+
+
+```{r}
+hotels_df %>% select(hotel, is_canceled, is_repeated_guest) %>%
+              filter(is_canceled == 0) %>%
+              group_by(hotel, is_canceled, is_repeated_guest) %>%
+              summarise(bookings_by_guest_type = n()) %>%
+              mutate(total_bookings = sum(bookings_by_guest_type)) %>%
+              treemap(., 
+                      index=c("hotel","is_repeated_guest"),  
+                      vSize = "bookings_by_guest_type", 
+                      type="index", 
+                      palette = "Pastel1",
+                      title="Non-cancelled bookings - repeat vs non-repeat guest distribution", 
+                      fontsize.title = 14,
+                      fontsize.labels=c(15,12),                
+                      fontcolor.labels=c("black","blue"),    
+                      fontface.labels=c(2,1),                  
+                      bg.labels=c("transparent"),              
+                      align.labels=list(
+                      c("center", "top"), 
+                      c("center", "center")),
+                      overlap.labels=0.5, inflate.labels=F) 
+```
+```{r}
+hotels_df %>% select(hotel, is_canceled, is_repeated_guest) %>%
+              filter(is_canceled == 1) %>%
+              group_by(hotel, is_canceled, is_repeated_guest) %>%
+              summarise(bookings_by_guest_type = n()) %>%
+              mutate(total_bookings = sum(bookings_by_guest_type)) %>%
+              treemap(., 
+                      index=c("hotel","is_repeated_guest"),  
+                      vSize = "bookings_by_guest_type", 
+                      type="index", 
+                      palette = "Pastel1",
+                      title="Cancelled bookings - repeat vs non-repeat guest distribution", 
+                      fontsize.title = 14,
+                      fontsize.labels=c(15,12),                
+                      fontcolor.labels=c("black","blue"),    
+                      fontface.labels=c(2,1),                  
+                      bg.labels=c("transparent"),              
+                      align.labels=list(
+                      c("center", "top"), 
+                      c("center", "center")),
+                      overlap.labels=0.5, inflate.labels=F) 
+
+```
+```{r}
+
+hotels_df %>% select(hotel, is_canceled, is_repeated_guest) %>%
+              filter(is_canceled == 1) %>%
+              group_by(hotel, is_canceled, is_repeated_guest) %>%
+              summarise(bookings_by_guest_type = n()) %>%
+              mutate(total_bookings = sum(bookings_by_guest_type)) 
+
+```
+
+* Focusing on cancelled bookings:
+
+
+```{r}
+repeat_df = hotels_df %>% select(hotel, is_canceled, is_repeated_guest,
+              stays_in_weekend_nights, stays_in_week_nights) %>%
+              filter(is_canceled == 1) %>%
+              group_by(hotel, is_canceled, is_repeated_guest)%>%
+              summarise(bookings_by_guest_type = n(),
+              weekend_bookings = sum(stays_in_weekend_nights),
+              weekday_bookings = sum(stays_in_week_nights))
+```
+
+```{r}
+repeat_df$is_repeated_guest = ifelse(repeat_df$is_repeated_guest == 0,'Not Repeated guest','Repeated Guest')
+```
+
+```{r}
+repeat_df = repeat_df %>% mutate_if(is.character, as.factor)
+```
+
+```{r}
+repeat_df
+```
+
+
+```{r}
+
+repeat_df %>% ggplot(., aes(fill=is_repeated_guest, y=log(weekend_bookings),
+                            x=hotel, label = weekend_bookings)) +
+              geom_bar(position="dodge2", stat="identity") +
+              geom_text(size = 3.5, position = position_dodge2(0.9), vjust = 1.8, 
+                        colour = "white", fontface = "bold") +
+              scale_fill_brewer(palette="Accent")+
+              labs(title ="Booking Counts by Repeat/Non-Repeat guests",
+                   x = "Type of Hotel",
+                   y = "Weekend Bookings (log scale)") +
+              theme(plot.title = element_text(hjust = 0.5), legend.title = element_blank())
+              
+```
+
+```{r}
+repeat_df %>% ggplot(., aes(fill=is_repeated_guest, y=log(weekday_bookings),
+                            x=hotel, label = weekday_bookings)) +
+              geom_bar(position="dodge2", stat="identity") +
+              geom_text(size = 3.5, position = position_dodge2(0.9), vjust = 1.8, 
+                        colour = "white", fontface = "bold") +
+              scale_fill_brewer(palette="Accent")+
+              labs(title ="Booking Counts by Repeat/Non-Repeat guests",
+                   x = "Type of Hotel",
+                   y = "Weekday Bookings (log scale)") +
+              theme(plot.title = element_text(hjust = 0.5), legend.title = element_blank())
+```
+
+```{text}
+Majority of the guest that end up staying are not repeat guests for both hotel types. This same number translated to the majority in cancellations for both hotels.
+```
+
+
 
