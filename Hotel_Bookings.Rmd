@@ -39,8 +39,8 @@ hotels_df$reservation_status_date = as.Date(hotels_df$reservation_status_date, f
 * Changing all character type data columns to factor types:
 
 ```{r}
-hotels_df = hotels_df %>% mutate_if(is.character, as.factor) %>%
-                          glimpse()
+# hotels_df = hotels_df %>% mutate_if(is.character, as.factor) %>%
+#                           glimpse()
 ```
 
 ```{r}
@@ -54,8 +54,8 @@ head(hotels_df, 6)
 ## Dataset makeup:
 
 ```{r}
-str(hotels_df)
-describe(hotels_df)
+# str(hotels_df)
+# describe(hotels_df)
 ```
 
 ## Checking null values:
@@ -251,7 +251,6 @@ hotels_df %>% select(hotel, is_canceled, deposit_type) %>%
            labs(title = "Number of bookings for each deposit type",
                 x = "Type of Deposit",
                 y = "Number of bookings - log scale") +
-            +
            theme(plot.title = element_text(hjust = 0.5), legend.title = element_blank()) 
 
 ```
@@ -555,5 +554,126 @@ Majority of the guests that end up staying are not repeat guests for both hotel 
 
 ```
 
+
+## Looking bookings, ADR, special requests for all months in 2015-2017 - Cancelled and non cancelled:
+
+* Booking info available for 2 years from 2015-2017 for both hotel types -
+      
+      + For the purpose of this project only Jan to Dec data for bookings was used to easily visualise bookings full year
+
+* Number of bookings for each year (cancelled):
+
+```{r}
+hotels_df %>% select(hotel, is_canceled, 
+                     arrival_date_year, 
+                     arrival_date_month, adr) %>%
+              filter(hotel == "City Hotel"
+                     & arrival_date_year == 2016
+                     & is_canceled == 1) %>%
+              group_by(arrival_date_year, arrival_date_month) %>%
+              summarise(cancellations_by_month = n(), avg_adr_by_month = round(mean(adr), 2)) %>%
+              arrange(desc(cancellations_by_month)) %>%
+              pivot_longer(c(cancellations_by_month:avg_adr_by_month),
+              names_to = "Monthly_Values", values_to="Total_Booking_Average_ADR") %>%
+              ggplot(., aes(y=fct_reorder(arrival_date_month,
+                                          log(Total_Booking_Average_ADR)), 
+                            x=log(Total_Booking_Average_ADR),
+                            fill= Monthly_Values,
+                            label=Total_Booking_Average_ADR)) +
+              geom_bar(position="dodge2", stat="identity") +
+              scale_fill_manual(values=c("turquoise4","olivedrab4")) +
+              geom_text(size = 2.8, position = position_dodge2(0.9), vjust = 0.5, 
+                        hjust = 1.3, colour = "white", fontface = "bold") +
+              labs(title ="City Hotel (all) - Number of cancellations & Average ADR by Month",
+                   x = "Number of Cancellations and Average ADR", y = "Months") +
+              theme(plot.title = element_text(hjust = 0.5), legend.title = element_blank())
+
+
+hotels_df %>% filter(distribution_channel == "Direct") %>%
+              select(hotel, is_canceled, 
+                     arrival_date_year, 
+                     arrival_date_month, adr) %>%
+              filter(hotel == "City Hotel"
+                     & arrival_date_year == 2016
+                     & is_canceled == 1) %>%
+              group_by(arrival_date_year, arrival_date_month) %>%
+              summarise(cancellations_by_month = n(), avg_adr_by_month = round(mean(adr), 2)) %>%
+              arrange(desc(cancellations_by_month)) %>%
+              pivot_longer(c(cancellations_by_month:avg_adr_by_month),
+              names_to = "Monthly_Values", values_to="Total_Booking_Average_ADR") %>%
+              ggplot(., aes(y=fct_reorder(arrival_date_month,
+                                          log(Total_Booking_Average_ADR)), 
+                            x=log(Total_Booking_Average_ADR),
+                            fill= Monthly_Values,
+                            label=Total_Booking_Average_ADR)) +
+              geom_bar(position="dodge2", stat="identity") +
+              scale_fill_manual(values=c("turquoise4","olivedrab4")) +
+              geom_text(size = 2.8, position = position_dodge2(0.9), vjust = 0.5, 
+                        hjust = 1.3, colour = "white", fontface = "bold") +
+              labs(title ="City Hotel (direct) - Number of cancellations & Average ADR by Month",
+                   x = "Number of Cancellations and Average ADR", y = "Months") +
+              theme(plot.title = element_text(hjust = 0.5), legend.title = element_blank())
+
+```
+
+```{r}
+
+hotels_df %>% select(hotel, is_canceled, 
+                     arrival_date_year, 
+                     arrival_date_month, adr) %>%
+              filter(hotel == "Resort Hotel"
+                     & arrival_date_year == 2016
+                     & is_canceled == 1) %>%
+              group_by(arrival_date_year, arrival_date_month) %>%
+              summarise(cancellations_by_month = n(), avg_adr_by_month = round(mean(adr), 2)) %>%
+              arrange(desc(cancellations_by_month)) %>%
+              pivot_longer(c(cancellations_by_month:avg_adr_by_month),
+              names_to = "Monthly_Values", values_to="Total_Booking_Average_ADR") %>%
+              ggplot(., aes(y=fct_reorder(arrival_date_month,
+                                          log(Total_Booking_Average_ADR)), 
+                            x=log(Total_Booking_Average_ADR),
+                            fill= Monthly_Values,
+                            label=Total_Booking_Average_ADR)) +
+              geom_bar(position="dodge2", stat="identity") +
+              scale_fill_manual(values=c("turquoise4","olivedrab4")) +
+              geom_text(size = 2.8, position = position_dodge2(0.9), vjust = 0.5, 
+                        hjust = 1.3, colour = "white", fontface = "bold") +
+              labs(title ="Resort Hotel (all) - Number of cancellations & Average ADR by Month",
+                   x = "Number of Cancellations and Average ADR (log-scale)", y = "Months") +
+              theme(plot.title = element_text(hjust = 0.5), legend.title = element_blank())
+
+
+hotels_df %>% filter(distribution_channel == "Direct") %>%
+              select(hotel, is_canceled, 
+                     arrival_date_year, 
+                     arrival_date_month, adr) %>%
+              filter(hotel == "Resort Hotel"
+                     & arrival_date_year == 2016
+                     & is_canceled == 1) %>%
+              group_by(arrival_date_year, arrival_date_month) %>%
+              summarise(cancellations_by_month = n(), avg_adr_by_month = round(mean(adr), 2)) %>%
+              arrange(desc(cancellations_by_month)) %>%
+              pivot_longer(c(cancellations_by_month:avg_adr_by_month),
+              names_to = "Monthly_Values", values_to="Total_Booking_Average_ADR") %>%
+              ggplot(., aes(y=fct_reorder(arrival_date_month,
+                                          log(Total_Booking_Average_ADR)), 
+                            x=log(Total_Booking_Average_ADR),
+                            fill= Monthly_Values,
+                            label=Total_Booking_Average_ADR)) +
+              geom_bar(position="dodge2", stat="identity") +
+              scale_fill_manual(values=c("turquoise4","olivedrab4")) +
+              geom_text(size = 2.8, position = position_dodge2(0.9), vjust = 0.5, 
+                        hjust = 1.3, colour = "white", fontface = "bold") +
+              labs(title ="Resort Hotel (direct) - Number of cancellations & Average ADR by Month",
+                   x = "Number of Cancellations and Average ADR (log-scale)", y = "Months") +
+              theme(plot.title = element_text(hjust = 0.5), legend.title = element_blank())
+
+
+```
+```{text}
+
+For both hotel, we do see a sort of trend where the the months that have most cancellations also have high average daily rate. 
+
+```
 
 
