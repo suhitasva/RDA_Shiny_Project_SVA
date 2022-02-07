@@ -19,8 +19,6 @@ library(dplyr)
 library(ggplot2)
 library(funModeling) 
 library(treemap)
-```
-```{r}
 library(RColorBrewer)
 ```
 
@@ -57,17 +55,18 @@ head(hotels_df, 6)
 
 ```{r}
 str(hotels_df)
-```
-
-```{r}
 describe(hotels_df)
 ```
 
 ## Checking null values:
 
+* Checking total sum of null values:
+
 ```{r}
 sum(is.na(hotels_df))
 ```
+
+* Checking which columns these come from:
 
 ```{r}
 df <- as.data.frame(
@@ -80,6 +79,8 @@ df <- as.data.frame(
 rownames(subset(df, df$V1 != 0))
 ```
 
+* Dropping null values:
+
 ```{r}
 hotels_df = hotels_df %>% drop_na(children)
 ```
@@ -90,10 +91,6 @@ dim(hotels_df)
 
 ```{r}
 hotels_df
-```
-
-```{r}
-
 ```
 
 
@@ -124,6 +121,8 @@ cancel_df = hotels_df %>% select(hotel, is_canceled) %>%
                 mutate(percent_cancellation
                      = round((cancellation_type_count/total_bookings)*100, 2)) 
 ```
+
+* Changing binary values to strings for better visual understanding:
 
 ```{r}
 cancel_df$is_canceled = ifelse(cancel_df$is_canceled == 0,'Not Cancelled','Cancelled')
@@ -338,13 +337,10 @@ hotels_df %>% select(hotel, is_canceled, distribution_channel) %>%
               mutate(total_non_cancelled_bookings = sum(bookings_by_distribution))
 ```
 
-
 ```{text}
 
 In non-cancelled bookings, show the same trend - TA/TO bookings formed the majority over other types - the reason probably is easy of booking. For the City hotels, the direct booking rate is slightly higher than the TA/TO rate, not the same for Resort hotel.
 ```
-
-
 
 * Average ADR for cancelled bookings by distribution type for both hotel types:
 
@@ -489,6 +485,8 @@ repeat_df = hotels_df %>% select(hotel, is_canceled, is_repeated_guest,
               weekday_bookings = sum(stays_in_week_nights))
 ```
 
+* Changing binary values to strings for better visual understanding:
+
 ```{r}
 repeat_df$is_repeated_guest = ifelse(repeat_df$is_repeated_guest == 0,'Not Repeated guest','Repeated Guest')
 ```
@@ -500,7 +498,6 @@ repeat_df = repeat_df %>% mutate_if(is.character, as.factor)
 ```{r}
 repeat_df
 ```
-
 
 ```{r}
 
@@ -530,8 +527,32 @@ repeat_df %>% ggplot(., aes(fill=is_repeated_guest, y=log(weekday_bookings),
               theme(plot.title = element_text(hjust = 0.5), legend.title = element_blank())
 ```
 
+```{r}
+repeat_df %>% pivot_longer(c(weekend_bookings:weekday_bookings),
+              names_to = "Week/Weekend_Booking", values_to="Nights booked")
+
+```
+```{r}
+repeat_df %>% pivot_longer(c(weekend_bookings:weekday_bookings),
+              names_to = "Week_Weekend", values_to="Nights_booked") %>%
+              ggplot(., aes(fill=Week_Weekend, y=log(Nights_booked),
+                            x=is_repeated_guest, label = Nights_booked)) +
+              geom_bar(position="dodge2", stat="identity") + facet_grid(. ~ hotel) +
+              geom_text(size = 3, position = position_dodge2(0.9), vjust = 1.8, 
+                        colour = "blue", fontface = "bold") +
+              scale_fill_brewer(palette="Set3")+
+              labs(title ="Booking Counts by Repeat/Non-Repeat guests",
+                   x = "Repeat/Non-Repeat Guest",
+                   y = "Nights Booked (log scale)") +
+              theme(plot.title = element_text(hjust = 0.5), legend.title = element_blank())
+  
+```
+
+
 ```{text}
-Majority of the guest that end up staying are not repeat guests for both hotel types. This same number translated to the majority in cancellations for both hotels.
+
+Majority of the guests that end up staying are not repeat guests for both hotel types. This same number translates to the majority in cancellations for both hotels. There is a huge difference in numbers for these hotels. Also, both types of guests seem to be staying more during the weekdays. Hotels can use this info to incentivise guests accordingly and retain more of these non-repeat guests as loyal returning guests by incentivising them more. 
+
 ```
 
 
