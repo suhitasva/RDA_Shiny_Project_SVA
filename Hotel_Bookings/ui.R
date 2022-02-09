@@ -4,8 +4,8 @@ library(shiny)
 
 dashboardPage(
   skin = "purple",
-  dashboardHeader(title='Hotel Booking Analysis',
+  dashboardHeader(title='Hotel Bookings Analysis',
                   titleWidth = 300),
-  dashboardSidebar(width = 300),
+  dashboardSidebar(color = "teal", width = 300),
   dashboardBody()
 )
