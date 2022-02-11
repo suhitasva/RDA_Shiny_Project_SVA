@@ -8,6 +8,9 @@ dashboardPage(
                   titleWidth = 300),
   dashboardSidebar(width = 300,
                    sidebarMenu(
+                     menuItem("Introduction",
+                              tabName = "intro",
+                              icon = icon("h-square")),
                      menuItem("Cancelled/Non-Cancelled Bookings", 
                               tabName = "cancel",
                               icon = icon("concierge-bell")),
@@ -34,9 +37,21 @@ dashboardPage(
   
   dashboardBody(
     tabItems(
+      tabItem(tabName = "intro",
+              h2("Introduction to Hotel Booking Cancellation Analysis")),
       tabItem(tabName = "cancel",
-              h2("Cancelled and Non Cancelled Bookings ratio by Hotel Types"),
-              mainPanel((plotOutput("count")))),
+              h2("Cancelled and Non Cancelled Bookings ratio by Hotel Types: "),
+              fluidRow(box(title = "Plots", plotOutput('freq'),
+                           solidHeader = TRUE, status = "primary"),
+                       box(title = "Table", 
+                           p(strong("Total Number of Cancelled and Non-Cancelled Bookings per Hotel Type: ")),
+                           hr(), "**percent_cancellations (%): percentage of total bookings", hr(),
+                           tableOutput(outputId ="canceldf"),
+                           solidHeader = TRUE, status = "primary")),
+              fluidRow(box(title = "Type of Hotel",
+                           status = "warning", solidHeader = TRUE, width = 3,
+                           radioButtons("hotel_type","Select Hotel Type:",
+                                        inline = TRUE, selected = "Both",
+                                        c("City Hotel","Resort Hotel","Both"))))),
       tabItem(tabName = "deposit",
-              h2("Number of bookings for different deposit types"))
-)))
+              h2("Number of bookings for different deposit types")))))
