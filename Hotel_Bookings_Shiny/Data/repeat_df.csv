@@ -1,0 +1,5 @@
+"hotel","is_canceled","is_repeated_guest","bookings_by_guest_type","weekend_bookings","weekday_bookings"
+"City Hotel",1,"Not Repeated guest",32657,25897,74194
+"City Hotel",1,"Repeated Guest",441,168,832
+"Resort Hotel",1,"Not Repeated guest",11011,14732,38074
+"Resort Hotel",1,"Repeated Guest",111,119,189

@@ -1,0 +1,5 @@
+"hotel","is_canceled","cancellation_type_count","total_bookings","percent_cancellation"
+"City Hotel","Not Cancelled",46228,79326,58.28
+"City Hotel","Cancelled",33098,79326,41.72
+"Resort Hotel","Not Cancelled",28938,40060,72.24
+"Resort Hotel","Cancelled",11122,40060,27.76
