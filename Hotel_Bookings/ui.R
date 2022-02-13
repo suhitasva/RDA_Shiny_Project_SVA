@@ -41,16 +41,22 @@ dashboardPage(
   dashboardBody(
     tabItems(
       tabItem(tabName = "intro",
-              h2("Introduction to Hotel Booking Cancellation Analysis")),
+              hr(),
+              fluidPage(mainPanel(imageOutput(outputId="intro")))),
+      
+      #===============================================================================================#
+      #                             Cancelled and Non Cancelled Bookings
+      #===============================================================================================#
+      
       
       tabItem(tabName = "cancel",
-              h2("Cancelled and Non Cancelled Bookings ratio by Hotel Types: "),
-              fluidRow(box(title = "Cancelled vs Non-Cancelled Barplot",
+              h2("Cancelled and Non Cancelled booking ratios by hotel type: "), hr(),
+              fluidRow(box(title = "Cancelled vs Non-Cancelled plots", 
                            plotOutput('freq', height = "450px", width = "750px"),
                            solidHeader = TRUE, status = "info"),
                        box(title = "Bookings Table", 
-                           p(strong("Total Number of Cancelled and Non-Cancelled Bookings per Hotel Type: ")),
-                           hr(), "**percent_cancellations (%): percentage of total bookings", hr(),
+                           p(strong("Percentage of Cancelled and Non-Cancelled bookings per hotel type: ")),
+                           br(), "**percent_cancellations (%): percentage of total bookings", hr(),
                            tableOutput(outputId ="canceldf"),
                            solidHeader = TRUE, status = "info")),
               fluidRow(box(title = "Type of Hotel:",
@@ -59,17 +65,24 @@ dashboardPage(
                                         inline = TRUE, selected = "City Hotel",
                                         c("City Hotel","Resort Hotel","Both"))))),
       
+      #===============================================================================================#
+      #                               Booking deposit type
+      #===============================================================================================#
+      
+      
       tabItem(tabName = "deposit",
-              h2("Number of bookings for different deposit types"),
-              fluidRow(box(title = "Bookings by Deposit Type Bar Plots",
+              h2("Total Number of bookings for different types of deposits: "), hr(),
+              fluidRow(box(title = "Bookings by deposit type plots", 
                            plotOutput('dep', height = "450px", width = "750px"),
                            solidHeader = TRUE, status = "info"),
-                       tabBox(title = "Bookings Table",
+                       tabBox(title = "Bookings Table", 
                               id = "tabset1", height = "450px",
-                              tabPanel("City Hotel", 
+                              tabPanel("City Hotel",
+                                       p(strong("Total Number of Cancelled and Non-Cancelled bookings per deposit type: ")),
                                        hr(), tableOutput(outputId ="depositdf1"),
                                        "0 = Not-Cancelled  1 = Cancelled"),
                               tabPanel("Resort Hotel",
+                                       p(strong("Total Number of Cancelled and Non-Cancelled bookings per deposit type: ")),
                                        hr(), tableOutput(outputId ="depositdf2"),
                                        "0 = Not-Cancelled  1 = Cancelled"))),
               fluidRow(box(title = "Type of Hotel:",
@@ -84,17 +97,24 @@ dashboardPage(
                                         c("Cancelled" = 1 ,
                                           "Not-Cancelled" = 0))))),
       
+      #===============================================================================================#
+      #                       Hotel Distribution Type - Total Bookings
+      #===============================================================================================#
+      
+      
       tabItem(tabName = "tot_book",
-              h2("Number of bookings for different Hotel Distribution types"),
-              fluidRow(box(title = "Bookings by Distribution Type Bar Plots",
+              h2("Total Number of cancelled bookings for different hotel distribution types: "), hr(),
+              fluidRow(box(title = "Bookings by distribution type plots", 
                            plotOutput('dist', height = "450px", width = "750px"),
                            solidHeader = TRUE, status = "info"),
-                       tabBox(title = "Bookings Table",
+                       tabBox(title = "Bookings Table", 
                               id = "tabset2", height = "450px",
-                              tabPanel("City Hotel", 
+                              tabPanel("City Hotel",
+                                       p(strong("Total Number of cancelled bookings per distribution type: ")),
                                        hr(), tableOutput(outputId ="distdf1"),
                                        "1 = Cancelled"),
                               tabPanel("Resort Hotel",
+                                       p(strong("Total Number of cancelled bookings per distribution type: ")),
                                        hr(), tableOutput(outputId ="distdf2"),
                                        "1 = Cancelled"))),
               fluidRow(box(title = "Type of Hotel:",
@@ -103,13 +123,17 @@ dashboardPage(
                                         selected = "City Hotel", inline = TRUE,
                                         c("City Hotel","Resort Hotel", "Both"))))),
       
+      #===============================================================================================#
+                                # Hotel Distribution Type - Average ADR
+      #===============================================================================================#
+      
       
       tabItem(tabName = "avg_adr",
-              h2("Average Daily Rate Evaluation for different Hotel Distribution types"),
-              fluidRow(box(title = "Average Daily Rates for each distribution type",
+              h2("Average Daily Rate Evaluation for different hotel distribution types"), hr(),
+              fluidRow(box(title = "Average Daily Rates for each distribution type - cancelled bookings", 
                            plotOutput('avg_adr', height = "450px", width = "750px"),
                            solidHeader = TRUE, status = "info"),
-                       box(title = "Distribution of Rates for all bookings",
+                       box(title = "Distribution of Rates for all bookings - City Hotel", 
                            plotOutput('adr_dist', height = "450px", width = "750px"),
                            solidHeader = TRUE, status = "info")),
               fluidRow(box(title = "Type of Hotel Distribution:",
@@ -124,6 +148,87 @@ dashboardPage(
                                         c("Cancelled" = 1 ,
                                           "Not-Cancelled" = 0))))),
       
+      #===============================================================================================#
+                                # Repeat/Non-Repeat Guests - Total Bookings
+      #===============================================================================================#
+      
+      tabItem(tabName = "tot_book_guest",
+              h2("Total Cancelled and Non Cancelled bookings by guest types:"), hr(),
+              fluidRow(box(title = "Repeat vs Non-Repeat guest distribution Treemap", 
+                           plotOutput('guesttree', height = "450px", width = "750px"),
+                           solidHeader = TRUE, status = "info"),
+                       tabBox(title = "Bookings Table", 
+                              id = "tabset3", height = "450px",
+                              tabPanel("Cancelled Bookings",
+                                       p(strong("Total Number of cancelled bookings per guest type: ")),
+                                       hr(), tableOutput(outputId ="guestbookdf1"),
+                                       "is_repeated_guest: 0 = Non-Repeat guest  1 = Repeat guest"),
+                              tabPanel("Non-Cancelled Bookings",
+                                       p(strong("Total Number of cancelled bookings per guest type: ")),
+                                       hr(), tableOutput(outputId ="guestbookdf2"),
+                                       "is_repeated_guest: 0 = Non-Repeat guest  1 = Repeat guest"))),
+              fluidRow(box(title = "Booking Status:",
+                           status = "success", solidHeader = TRUE, width = 3,
+                           radioButtons("cancel_type2","Select Booking Status:",
+                                        selected = 1, inline = TRUE,
+                                        c("Cancelled" = 1 ,
+                                          "Not-Cancelled" = 0))))),
+      
+      #===============================================================================================#
+                                # Repeat/Non-Repeat Guests - Weekday/Weekend Bookings
+      #===============================================================================================#
+      
+      tabItem(tabName = "week_day_end",
+              h2("Weekday/Weekend cancelled bookings per guest type"), hr(),
+              fluidRow(box(title = "Bookings by Weekday/Weekends - Barplots", 
+                           plotOutput('week', height = "450px", width = "750px"),
+                           solidHeader = TRUE, status = "info"),
+                       tabBox(title = "Bookings Table", 
+                              id = "tabset4", height = "450px",
+                              tabPanel("City Hotel",
+                                       p(strong("Total Number of cancelled bookings per stay type: ")),
+                                       hr(), tableOutput(outputId ="wkdayendf1"),
+                                       "1 = Cancelled"),
+                              tabPanel("Resort Hotel",
+                                       p(strong("Total Number of cancelled bookings per stay type: ")),
+                                       hr(), tableOutput(outputId ="wkdayendf2"),
+                                       "1 = Cancelled"))),
+              fluidRow(box(title = "Type of Booking:",
+                           status = "success", solidHeader = TRUE, width = 3,
+                           radioButtons("hotel_type4","Select Stay Type:",
+                                        selected = "City Hotel", inline = TRUE,
+                                        c("City Hotel","Resort Hotel"))))),
+      
+      #===============================================================================================#
+                                      # Monthly Cancellations and ADR
+      #===============================================================================================#
+      
+      tabItem(tabName = "monthly_adr",
+              h2("Monthly Average Daily Rate evaluation per hotel and distribution type (2016)"), hr(),
+              fluidRow(box(title = "Number of cancellations and average ADR plots", 
+                           plotOutput('monthly_adr', height = "600px"),
+                           solidHeader = TRUE, status = "info", width = 8)),
+              fluidRow(box(title = "Type of Hotel Distribution:",
+                           status = "success", solidHeader = TRUE, width = 4,
+                           radioButtons("hotel_dist2","Select Distribution Type:",
+                                       selected = "Direct", inline = TRUE,
+                                       c("Direct", "All Others"))),
+                       box(title = "Type of Booking:",
+                           status = "success", solidHeader = TRUE, width = 4,
+                           radioButtons("hotel_type5","Select Stay Type:",
+                                        selected = "City Hotel", inline = TRUE,
+                                        c("City Hotel","Resort Hotel"))))),
+      
+      #===============================================================================================#
+                                      # Conclusion
+      #===============================================================================================#
+      
       
       tabItem(tabName = "conclu",
-              h2("Takeways/Conclusion")))))
+              hr(),
+              fluidPage(mainPanel(imageOutput(outputId="conclu"))))
+      )
+    
+    )
+  
+  )
