@@ -1,0 +1,144 @@
+---
+title: "Clean_Code"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Loading libraries needed:
+
+
+```{r}
+library(tidyverse)
+library(dplyr)
+library(funModeling) 
+```
+
+## Loading Hotel Bookings dataset:
+
+```{r}
+hotels_df = read.csv('hotel_bookings.csv')
+```
+
+## Initial data cleanup:
+
+* Changing the reservation status date column to date type:
+
+```{r}
+hotels_df$reservation_status_date = as.Date(hotels_df$reservation_status_date, format="%Y-%m-%d")
+```
+
+* Changing all character type data columns to factor types:
+
+```{r}
+hotels_df = hotels_df %>% mutate_if(is.character, as.factor)
+```
+
+* Dropping null values:
+
+```{r}
+hotels_df = hotels_df %>% drop_na(children)
+```
+
+* Looking at number cancelled bookings versus not for each hotel type:
+
+```{r}
+cancel_df = hotels_df %>% select(hotel, is_canceled) %>%
+                group_by(hotel, is_canceled) %>%
+                summarise(cancellation_type_count = n()) %>%
+                mutate(total_bookings = sum(cancellation_type_count)) %>%
+                mutate(percent_cancellation
+                     = round((cancellation_type_count/total_bookings)*100, 2)) 
+```
+
+* Changing binary values to strings for better visual understanding:
+
+```{r}
+cancel_df$is_canceled = ifelse(cancel_df$is_canceled == 0,'Not Cancelled','Cancelled')
+```
+
+```{r}
+cancel_df = cancel_df %>% mutate_if(is.character, as.factor)
+```
+
+
+```{r}
+repeat_df = hotels_df %>% select(hotel, is_canceled, is_repeated_guest,
+              stays_in_weekend_nights, stays_in_week_nights) %>%
+              filter(is_canceled == 1) %>%
+              group_by(hotel, is_canceled, is_repeated_guest)%>%
+              summarise(bookings_by_guest_type = n(),
+              weekend_bookings = sum(stays_in_weekend_nights),
+              weekday_bookings = sum(stays_in_week_nights))
+```
+
+* Changing binary values to strings for better visual understanding:
+
+```{r}
+repeat_df$is_repeated_guest = ifelse(repeat_df$is_repeated_guest == 0,
+                                     'Not Repeated guest','Repeated Guest')
+```
+
+```{r}
+repeat_df = repeat_df %>% mutate_if(is.character, as.factor)
+```
+
+```{r}
+cancel_df
+```
+
+* Write data csv files for app use:
+
+```{r}
+# write.csv(cancel_df, file='cancel_df.csv', row.names=FALSE)
+```
+
+```{r}
+# copy_cancel_df = read.csv('cancel_df.csv', stringsAsFactors = TRUE)
+```
+
+```{r}
+# copy_cancel_df
+```
+
+```{r}
+# repeat_df
+```
+
+```{r}
+# write.csv(repeat_df, file='repeat_df.csv', row.names=FALSE)
+```
+
+```{r}
+# copy_repeat_df = read.csv('repeat_df.csv', stringsAsFactors = TRUE)
+```
+
+```{r}
+# copy_repeat_df
+```
+
+```{r}
+hotels_df
+```
+
+```{r}
+write.csv(hotels_df, file='hotels_df.csv', row.names=FALSE)
+```
+
+```{r}
+getwd()
+```
+
+
+```{r}
+copy_hotels_df = read.csv('hotels_df.csv', stringsAsFactors = TRUE)
+```
+
+```{r}
+copy_hotels_df
+```
+
+
+
